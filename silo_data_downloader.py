@@ -57,13 +57,13 @@ def update_station_list(event=None):
 
 def download_data():
     mode = var_mode.get()
-    start = entry_start.get().strip()
-    end = entry_end.get().strip()
+    start_date = entry_start.get().strip()
+    end_date = entry_end.get().strip()
     email = entry_email.get().strip()
 
-    if not start or not end or not email:
+    if not start_date or not end_date or not email:
         messagebox.showerror(
-            "Input error", "Please fill in start date, end date, and email."
+            "Input error", "Start date, end date, and email are required."
         )
         return
 
@@ -71,9 +71,9 @@ def download_data():
         lat = entry_lat.get().strip()
         lon = entry_lon.get().strip()
         if not lat or not lon:
-            messagebox.showerror("Input error", "Please enter latitude and longitude.")
+            messagebox.showerror("Input error", "Latitude and Longitude are required.")
             return
-        url = build_silo_url_grid(lat, lon, start, end, email)
+        url = build_silo_url_grid(lat, lon, start_date, end_date, email)
         file_label = f"grid_{lat}_{lon}"
     else:
         selection = station_listbox.curselection()
@@ -82,26 +82,35 @@ def download_data():
             return
         station_name = station_listbox.get(selection[0])
         station_num = stations[station_name]["number"]
-        url = build_silo_url_station(station_num, start, end, email)
+        url = build_silo_url_station(station_num, start_date, end_date, email)
         file_label = f"station_{station_num}"
 
     try:
-        print(f"DEBUG: URL used: {url}")
-        resp = requests.get(url)
-        if resp.status_code != 200 or "<html>" in resp.text.lower():
-            raise Exception(f"Download failed: status {resp.status_code}")
+        print(f"Downloading from: {url}")
+        response = requests.get(url)
+        if response.status_code != 200 or "<html>" in response.text.lower():
+            raise Exception(f"Download failed: status {response.status_code}")
 
-        data_lines = resp.text.strip().splitlines()
-        data_rows = [line.split() for line in data_lines[46:] if line.strip()]
+        lines = response.text.strip().splitlines()
+
+        # Find first header line (starts with "Date")
+        header_index = next(
+            (i for i, line in enumerate(lines) if line.startswith("Date")), None
+        )
+        if header_index is None:
+            raise ValueError("Header line starting with 'Date' not found.")
+
+        # Keep header + data only
+        table_lines = lines[header_index:]
+        data = [line.split() for line in table_lines if line.strip()]
 
         filename = f"silo_{file_label}.csv"
         with open(filename, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerows(data_rows)
+            csv.writer(f).writerows(data)
 
-        messagebox.showinfo("Success", f"Data saved to {filename}")
+        messagebox.showinfo("Success", f"✅ Data saved to: {filename}")
     except Exception as e:
-        messagebox.showerror("Error", str(e))
+        messagebox.showerror("Download Error", str(e))
 
 
 def toggle_mode():
