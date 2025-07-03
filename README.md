@@ -1,4 +1,6 @@
 # SILO Weather Data Tools
+User guide
+https://charlesdarwinuni-my.sharepoint.com/:w:/r/personal/s374211_students_cdu_edu_au/_layouts/15/Doc.aspx?sourcedoc=%7BD56C1C45-5030-42E0-8E3C-03513CA9D372%7D&file=User%20Guide_RINA_Download&Analyse_SILO.docx=&wdOrigin=TEAMS-MAGLEV.undefined_ns.rwc&action=default&mobileredirect=true
 
 This repository provides a set of GUI tools to help users interact with the [SILO climate data API](https://www.longpaddock.qld.gov.au/silo/). The tools are written in Python and support:
 
