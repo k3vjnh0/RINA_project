@@ -42,6 +42,11 @@ def run_sarima_forecast(df_input, mode='monthly', seasonal_period=12):
         df_monthly['Month'] = df_monthly.index.month
         df_model = df_monthly[df_monthly['Month'].isin([12, 1, 2])]
         seasonal_period = 3  # override
+
+    if mode == 'daily_wet_season':
+        df_model = df[df['Month'].isin([12, 1, 2])].copy()
+        df_model = df_model.set_index('Date')
+        seasonal_period = 365
     else:
         df_model = df_monthly.copy()
 
@@ -68,7 +73,7 @@ def run_sarima_forecast(df_input, mode='monthly', seasonal_period=12):
     plt.show()
 
     # Train/Test split
-    split_index = int(len(df_model) * 0.7)
+    split_index = int(len(df_model) * 0.8)
     train = df_model.iloc[:split_index]
     test = df_model.iloc[split_index:]
 
@@ -124,4 +129,6 @@ def run_sarima_forecast(df_input, mode='monthly', seasonal_period=12):
 # Forecast for full year (monthly)
 #run_sarima_forecast(df_day, mode='monthly', seasonal_period=12)
 # Forecast for wet season only
-run_sarima_forecast(df_day, mode='wet_season', seasonal_period=3)
+#run_sarima_forecast(df_day, mode='wet_season', seasonal_period=3)
+# Forecast for wet season only
+run_sarima_forecast(df_day, mode='daily_wet_season', seasonal_period=365)
