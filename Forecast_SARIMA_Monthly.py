@@ -90,6 +90,29 @@ def forecast_to_date():
         plt.legend()
         plt.tight_layout()
         plt.show()
+        
+       
+        # Plotting only forecast with month labels and temperature values
+        plt.figure(figsize=(14, 6))
+        plt.plot(forecast_mean.index, forecast_mean, label='Forecast', color='blue', marker='o')
+        plt.fill_between(forecast_ci.index, forecast_ci.iloc[:, 0], forecast_ci.iloc[:, 1], color='lightblue', alpha=0.3)
+
+        # Display temperature values on each forecast point
+        for date, temp in forecast_mean.items():
+            plt.text(date, temp + 0.2, f"{temp:.1f}°C", ha='center', va='bottom', fontsize=9, rotation=0)
+
+        plt.title(f"Forecast Only: Soil Temperature from {forecast_index[0].strftime('%b %Y')} to {forecast_index[-1].strftime('%b %Y')}")
+        plt.xlabel("Month")
+        plt.ylabel("Soil Temperature (°C)")
+
+        # Format x-axis to show each month clearly
+        plt.xticks(forecast_mean.index, [d.strftime('%b\n%Y') for d in forecast_mean.index], rotation=45)
+
+        plt.grid(True, linestyle='--', alpha=0.5)
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
+
 
     except Exception as e:
         messagebox.showerror("Error", f"Something went wrong:\n{str(e)}")
