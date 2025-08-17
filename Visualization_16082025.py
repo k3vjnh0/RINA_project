@@ -30,6 +30,42 @@ plt.tight_layout()
 plt.show()
 
 
+#Line chart for treatment
+plt.figure(figsize=(10,6))
+sns.lineplot(
+    data=df1,
+    x="Date",
+    y="Height_Total_Average",
+    hue="Treatment",
+    marker="o",
+    palette="tab10",  # tab10 does not use green for first colors
+    ci=None # Remove the confidence interval area
+)
+
+# Calculate mean and std for each (Date, Treatment)
+grouped = df1.groupby(["Date", "Treatment"])["Height_Total_Average"].agg(['mean', 'std']).reset_index()
+
+# Get the color palette used by seaborn
+palette = sns.color_palette("tab10", n_colors=len(df1["Treatment"].unique()))
+treatment_list = list(df1["Treatment"].unique())
+color_map = {treatment: palette[i] for i, treatment in enumerate(treatment_list)}
+
+# Draw std as error bars
+for _, row in grouped.iterrows():
+    plt.errorbar(
+        row["Date"], row["mean"],
+        yerr=row["std"] if not pd.isna(row["std"]) else 0,
+        fmt='none', ecolor=color_map[row["Treatment"]], elinewidth=1.5, capsize=4, alpha=0.8
+    )
+
+plt.title("Average Height by Treatment at Each Timepoint", fontsize=14)
+plt.ylabel("Average Height")
+plt.xlabel("Date")
+plt.legend(title="Treatment")
+plt.tight_layout()
+plt.show()
+
+
 # ==============================
 # SHEET 2: Interaction Plot
 # ==============================
@@ -44,7 +80,8 @@ g.map_dataframe(
     x="Position",
     y="SPAD_Average",
     hue="Treatment",
-    marker="o"
+    marker="o",
+    ci=None
 )
 g.add_legend()
 # Move the legend to the bottom
@@ -53,6 +90,66 @@ if g._legend is not None:
 g.set_axis_labels("Position (Top vs Bottom)", "SPAD Average")
 plt.subplots_adjust(top=0.8)
 g.fig.suptitle("Treatment × Position × Date Interaction Plot")
+plt.show()
+
+#Box plot with date and SPAD
+plt.figure(figsize=(10,6))
+sns.boxplot(
+    data=df2,
+    x="Date",
+    y="SPAD_Average"
+)
+plt.title("SPAD Average Distribution by Date", fontsize=14)
+plt.xlabel("Date")
+plt.ylabel("SPAD Average")
+#Mean
+means = df2.groupby("Date")["SPAD_Average"].mean()
+for i, (date, mean) in enumerate(means.items()):
+    plt.text(i, mean, f"{mean:.2f}", ha='center', va='bottom', fontsize=10, color='black', fontweight='bold')
+plt.tight_layout()
+plt.show()
+
+
+#Box plot with date and SPAD
+plt.figure(figsize=(10,6))
+sns.boxplot(
+    data=df2,
+    x="Treatment",
+    y="SPAD_Average"
+)
+plt.title("SPAD Average Distribution by Treatment", fontsize=14)
+plt.xlabel("Treatment")
+plt.ylabel("SPAD Average")
+#Mean
+means = df2.groupby("Treatment")["SPAD_Average"].mean()
+for i, (treatment, mean) in enumerate(means.items()):
+    plt.text(i, mean, f"{mean:.2f}", ha='center', va='bottom', fontsize=10, color='black', fontweight='bold')
+plt.tight_layout()
+plt.show()
+
+
+#Box plot with position ,treatment and SPAD
+plt.figure(figsize=(10,6))
+sns.boxplot(
+    data=df2,
+    x="Treatment",
+    y="SPAD_Average",
+    hue="Position"   
+)
+plt.title("SPAD Average Distribution by Treatment and Position", fontsize=14)
+plt.xlabel("Treatment")
+plt.ylabel("SPAD Average")
+#Mean
+means = df2.groupby(["Treatment", "Position"])["SPAD_Average"].mean()
+positions = list(df2["Position"].unique())
+for i, treatment in enumerate(df2["Treatment"].unique()):
+    for j, position in enumerate(positions):
+        mean = means.get((treatment, position), None)
+        if mean is not None:
+            # Offset for text position
+            offset = -0.2 if j == 0 else 0.2
+            plt.text(i + offset, mean, f"{mean:.2f}", ha='center', va='bottom', fontsize=10, color='black', fontweight='bold')
+plt.tight_layout()
 plt.show()
 
 
